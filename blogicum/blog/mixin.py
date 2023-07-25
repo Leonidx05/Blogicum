@@ -5,8 +5,6 @@ from django.urls import reverse
 from blog.forms import CommentForm
 from blog.models import Comment, Post
 
-
-
 OBJ_COUNT = 10
 
 
