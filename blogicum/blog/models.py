@@ -83,9 +83,8 @@ class Post(BaseModel):
     def __str__(self):
         return self.title
 
-
-def get_absolute_url(self):
-    return reverse("blog:post_detail", kwargs={"pk": self.pk})
+    def get_absolute_url(self):
+        return reverse("blog:post_detail", kwargs={"pk": self.pk})
 
 
 class Comment(BaseModel):
