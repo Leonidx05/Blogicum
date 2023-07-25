@@ -1,6 +1,6 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import get_object_or_404
-from django.db.models import Count
+from django.shortcuts import get_object_or_404, redirect
+from django.db.models import Count, Q
 from django.http import Http404
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
@@ -30,13 +30,17 @@ class PostDetailView(PaginatorMixin, DetailView):
     template_name = 'blog/detail.html'
     context_object_name = 'post'
 
-    def get_object(self, queryset=None):
-        post = get_object_or_404(Post, pk=self.kwargs["pk"])
-        if (not post.is_published or not post.category.is_published
-                or post.pub_date > timezone.now()):
-            if self.request.user != post.author:
-                raise Http404("Post does not exist")
-        return post
+    def get_queryset(self):
+        return (
+            Post.objects.filter(
+                Q(author__username=self.request.user.username)
+                | Q(category__is_published=True)
+                & Q(is_published=True)
+                & Q(pub_date__lte=timezone.now())
+            )
+            .order_by("-pub_date")
+            .annotate(comment_count=Count("comments"))
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
